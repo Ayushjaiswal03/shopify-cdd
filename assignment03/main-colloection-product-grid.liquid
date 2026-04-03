@@ -1,0 +1,59 @@
+
+<button id="open-filter-drawer" class="filter-btn">
+  Filters
+</button>
+
+<div id="active-filters"></div>
+
+<div id="filter-drawer" class="filter-drawer">
+
+  <div class="drawer-header">
+    <h3>Filters</h3>
+    <button id="close-filter">✕</button>
+  </div>
+
+  <div id="drawer-content">
+    <form id="FacetFiltersForm">
+
+      {% for filter in collection.filters %}
+        <div class="filter-group">
+          <div class="filter-title">{{ filter.label }}</div>
+
+          {% case filter.type %}
+
+            {% when 'list' %}
+              {% for value in filter.values %}
+                <label class="filter-item">
+                  <input
+                    type="checkbox"
+                    name="{{ filter.param_name }}"
+                    value="{{ value.value }}"
+                    {% if value.active %}checked{% endif %}
+                  >
+                  <span>{{ value.label }}</span>
+                  <span class="count">{{ value.count }}</span>
+                </label>
+              {% endfor %}
+
+            {% when 'price_range' %}
+              <div style="display:flex; gap:5px;">
+                <input type="number" name="{{ filter.min_value.param_name }}" placeholder="Min">
+                <input type="number" name="{{ filter.max_value.param_name }}" placeholder="Max">
+              </div>
+
+          {% endcase %}
+        </div>
+      {% endfor %}
+
+      <div class="drawer-footer">
+        <button type="button" id="clear-filters">Clear</button>
+        <button type="submit" id="apply-filters">Apply</button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+<div id="drawer-overlay"></div>
+

@@ -1,0 +1,172 @@
+
+.filter-btn {
+  padding: 10px;
+  background: black;
+  color: white;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+#active-filters {
+  margin: 10px 0;
+}
+
+.filter-chip {
+  display: inline-block;
+  background: black;
+  color: white;
+  padding: 5px 10px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+
+
+.filter-drawer {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 85%;
+  max-width: 400px;
+  height: 100%;
+  background: #fff;
+  z-index: 1000;
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-drawer.open {
+  left: 0;
+}
+
+.drawer-header {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+#drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+}
+
+#drawer-overlay.show {
+  display: block;
+}
+
+#close-filter {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+
+  padding: 4px;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+}
+
+#close-filter:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+
+
+
+#drawer-content {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+#drawer-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+
+.filter-group {
+  margin-bottom: 15px;
+}
+
+.filter-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.filter-item span:first-of-type {
+  flex: 1; 
+}
+
+.filter-item .count {
+  margin-left: 6px;
+  color: #888;
+  font-size: 12px;
+}
+
+.filter-item input {
+  margin-right: 10px;
+}
+
+.filter-item .count {
+  color: #888;
+  font-size: 12px;
+}
+
+
+
+
+.drawer-footer {
+  display: flex;
+  gap: 10px;
+  padding: 16px;
+  border-top: 1px solid #eee;
+}
+
+#clear-filters {
+  flex: 1;
+  background: #f5f5f5;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+}
+
+#apply-filters {
+  flex: 1;
+  background: black;
+  color: white;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+}
+
+
+
+
+@media (max-width: 768px) {
+  .filter-drawer {
+    width: 100%;
+  }
+}

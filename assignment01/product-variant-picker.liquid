@@ -1,0 +1,179 @@
+<style>
+  .cdd-custom-swatches { margin: 2rem 0; display: flex; flex-direction: column; }
+  .cdd-swatch-label { font-size: 1.3rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1.2rem; }
+  .cdd-swatch-list { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-bottom: 1rem; min-height: 44px; }
+  
+  .cdd-pill {
+    width: 4.4rem;
+    height: 4.4rem;
+    border-radius: 50%;
+    border: 1px solid rgba(18,18,18,0.1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    background-size: cover;
+    display: block !important;
+    transition: outline 0.1s ease;
+  }
+
+  .cdd-pill.active { 
+    outline: 2px solid #000 !important; 
+    outline-offset: 2px; 
+  }
+
+  .cdd-pill.is-oos::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -10%;
+    width: 120%;
+    height: 3px;
+    background: #ff0000;
+    transform: rotate(-45deg);
+    z-index: 20;
+  }
+
+  .cdd-pill.is-oos { opacity: 0.5; }
+  .cdd-selected-info { font-size: 1.4rem; margin-top: 0.5rem; color: #121212; min-height: 1.6rem; }
+</style>
+
+{%- unless product.has_only_default_variant -%}
+  <variant-selects
+    id="variant-selects-{{ section.id }}"
+    data-section="{{ section.id }}"
+    {{ block.shopify_attributes }}
+  >
+    {%- for option in product.options_with_values -%}
+      {% unless option.name contains 'Color' or option.name contains 'Colour' %}{% endunless %}
+      {%- liquid
+        assign swatch_count = option.values | map: 'swatch' | compact | size
+        assign picker_type = block.settings.picker_type
+
+        if swatch_count > 0 and block.settings.swatch_shape != 'none'
+          if block.settings.picker_type == 'dropdown'
+            assign picker_type = 'swatch_dropdown'
+          else
+            assign picker_type = 'swatch'
+          endif
+        endif
+      -%}
+
+      {%- if picker_type == 'swatch' -%}
+        <fieldset class="js product-form__input product-form__input--swatch">
+          <legend class="form__label">
+            {{ option.name }}: 
+            <span data-selected-value>{{ option.selected_value }}</span>
+          </legend>
+          {% render 'product-variant-options', product: product, option: option, block: block, picker_type: picker_type %}
+        </fieldset>
+      {%- elsif picker_type == 'button' -%}
+        <fieldset class="js product-form__input product-form__input--pill">
+          <legend class="form__label">{{ option.name }}</legend>
+          {% render 'product-variant-options', product: product, option: option, block: block, picker_type: picker_type %}
+        </fieldset>
+      {%- else -%}
+        <div class="product-form__input product-form__input--dropdown">
+          <label class="form__label">{{ option.name }}</label>
+          <div class="select">
+            <select
+              class="select__select"
+              name="options[{{ option.name | escape }}]"
+              form="{{ product_form_id }}"
+            >
+              {% render 'product-variant-options', product: product, option: option, block: block, picker_type: picker_type %}
+            </select>
+          </div>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+
+    <!--  Custom Swatch to improve UI -->
+    <div class="cdd-custom-swatches">
+      <span class="cdd-swatch-label">Color Swatches</span>
+      <div class="cdd-swatch-list">
+
+        {% assign color_option = nil %}
+        {% for opt in product.options_with_values %}
+          {% assign opt_name = opt.name | downcase %}
+          {% if opt_name contains 'color' or opt_name contains 'colour' %}
+            {% assign color_option = opt %}
+          {% endif %}
+        {% endfor %}
+
+        {% if color_option != nil %}
+          {% assign color_index = color_option.position | minus: 1 %}
+
+          {% for val in color_option.values %}
+
+            {% assign is_oos = true %}
+
+            {% for variant in product.variants %}
+              {% if variant.options[color_index] == val and variant.available %}
+                {% assign is_oos = false %}
+              {% endif %}
+            {% endfor %}
+
+            {% assign swatch_hex = '#ffffff' %}
+            {% case val %}
+              {% when 'White' %}{% assign swatch_hex = '#ffffff' %}
+              {% when 'Grey' %}{% assign swatch_hex = '#808080' %}
+              {% when 'Blue' %}{% assign swatch_hex = '#2b4d7c' %}
+              {% else %}{% assign swatch_hex = '#e5e5e5' %}
+            {% endcase %}
+
+            <div 
+              class="cdd-pill {% if is_oos %}is-oos{% endif %}"
+              style="background-color: {{ swatch_hex }};"
+              data-value="{{ val | escape }}"
+              onclick="syncCddSwatch('{{ val | escape }}')"
+            ></div>
+
+          {% endfor %}
+        {% endif %}
+
+      </div>
+
+      <div class="cdd-selected-info">
+        <span id="cdd-dynamic-text"></span>
+      </div>
+    </div>
+
+    <script type="application/json" data-selected-variant>
+      {{ product.selected_or_first_available_variant | json }}
+    </script>
+
+  </variant-selects>
+{%- endunless -%}
+
+<script>
+  function syncCddSwatch(val) {
+    const input = document.querySelector(`input[type="radio"][value="${val}"]`);
+    if (input) input.click();
+  }
+
+  function updateCddUI() {
+    const fieldsets = document.querySelectorAll('fieldset.product-form__input');
+    let selColor = '';
+    let selSize = '';
+
+    fieldsets.forEach(fs => {
+      const labelText = fs.querySelector('legend')?.innerText.toLowerCase() || '';
+      const activeVal = fs.querySelector('input:checked')?.value;
+      if (labelText.includes('color') || labelText.includes('colour')) selColor = activeVal;
+      if (labelText.includes('size')) selSize = activeVal;
+    });
+
+    document.querySelectorAll('.cdd-pill').forEach(pill => {
+      const pVal = pill.dataset.value;
+      pill.classList.toggle('active', pVal === selColor);
+    });
+
+    const info = document.getElementById('cdd-dynamic-text');
+    if (info && selColor) {
+      info.innerText = `Colour: ${selColor} — Size: ${selSize}`;
+    }
+  }
+
+  document.addEventListener('change', () => setTimeout(updateCddUI, 50));
+  window.addEventListener('load', updateCddUI);
+</script>
