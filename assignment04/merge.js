@@ -1,5 +1,5 @@
 const SHOP = "bedding-den.myshopify.com";
-const ACCESS_TOKEN = "YOUR_ACCESS_TOKEN";  
+const ACCESS_TOKEN = "ACCESS_TOKEN";  
 const GRAPHQL_URL = `https://${SHOP}/admin/api/2024-01/graphql.json`;
 
 
